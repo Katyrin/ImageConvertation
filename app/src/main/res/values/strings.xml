@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Image convertation</string>
     <string name="choose_image">Choose image</string>
+    <string name="save_image">Save image</string>
     <string name="error">Error</string>
     <string name="uploaded_image">Uploaded Image</string>
+    <string name="type_image">image/*</string>
+    <string name="select_image">Select Image</string>
 </resources>
