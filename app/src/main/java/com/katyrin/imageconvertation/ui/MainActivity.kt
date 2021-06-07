@@ -1,13 +1,15 @@
 package com.katyrin.imageconvertation.ui
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.katyrin.imageconvertation.R
+import com.katyrin.imageconvertation.data.Image
 import com.katyrin.imageconvertation.databinding.ActivityMainBinding
 import com.katyrin.imageconvertation.presenter.MainPresenter
 import com.katyrin.imageconvertation.presenter.MainView
-import com.katyrin.imageconvertation.utils.showAlertDialog
+import com.katyrin.imageconvertation.utils.createAlertDialog
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import moxy.MvpAppCompatActivity
@@ -15,6 +17,7 @@ import moxy.ktx.moxyPresenter
 
 class MainActivity : MvpAppCompatActivity(), MainView {
 
+    private lateinit var alertDialog: AlertDialog
     private var disposable: Disposable? = null
     private val presenter: MainPresenter by moxyPresenter {
         MainPresenter(ImageConverter(this), AndroidSchedulers.mainThread())
@@ -30,9 +33,9 @@ class MainActivity : MvpAppCompatActivity(), MainView {
         setContentView(binding?.root)
     }
 
-    override fun setImage(imageBitmap: Bitmap?) {
-        if (imageBitmap != null)
-            binding?.imageView?.setImageBitmap(imageBitmap)
+    override fun setImage(image: Image?) {
+        if (image != null)
+            binding?.imageView?.setImageBitmap(image.bitmap)
     }
 
     override fun init() {
@@ -52,27 +55,40 @@ class MainActivity : MvpAppCompatActivity(), MainView {
         val imagePicker = ImagePicker()
         disposable = imagePicker.pick(data, contentResolver)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ bitmap ->
-                presenter.setImage(bitmap)
+            .subscribe({ image ->
+                successPickImage(image)
             }, { throwable ->
-                showAlertDialog(getString(R.string.error), throwable.localizedMessage)
+                Toast.makeText(this, throwable.localizedMessage, Toast.LENGTH_SHORT).show()
             })
     }
 
-    override fun showProgressConversion() {
+    private fun successPickImage(image: Image?) {
+        presenter.setImage(image)
+        Toast.makeText(this, getString(R.string.success), Toast.LENGTH_SHORT).show()
+    }
 
+    override fun showProgressConversion() {
+        alertDialog = createAlertDialog(
+            getString(R.string.loading),
+            getString(R.string.loading_message)
+        ) { presenter.stopConvert() }
+        alertDialog.show()
     }
 
     override fun showSuccess() {
-        println("showSuccess")
+        Toast.makeText(this, getString(R.string.success_convert), Toast.LENGTH_SHORT).show()
     }
 
     override fun hideProgressConversion() {
-
+        alertDialog.dismiss()
     }
 
-    override fun showError() {
-        println("Error")
+    override fun showError(errorMessage: String?) {
+        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showCancelMessage() {
+        Toast.makeText(this, getString(R.string.cancel_message), Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {

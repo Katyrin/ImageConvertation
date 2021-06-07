@@ -1,6 +1,6 @@
 package com.katyrin.imageconvertation.presenter
 
-import android.graphics.Bitmap
+import com.katyrin.imageconvertation.data.Image
 import com.katyrin.imageconvertation.ui.ImageConverter
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.disposables.Disposable
@@ -12,33 +12,40 @@ class MainPresenter(
 ) : MvpPresenter<MainView>() {
 
     private var disposable: Disposable? = null
-    private var imageBitmap: Bitmap? = null
+    private var image: Image? = null
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
         viewState.init()
-        viewState.setImage(imageBitmap)
+        viewState.setImage(image)
     }
 
     fun convertImage() {
         viewState.openImage()
     }
 
-    fun setImage(bitmap: Bitmap?) {
-        imageBitmap = bitmap
-        viewState.setImage(imageBitmap)
+    fun setImage(image: Image?) {
+        this.image = image
+        viewState.setImage(image)
     }
 
     fun savePngImage() {
         viewState.showProgressConversion()
-        disposable = converter.convert(imageBitmap)
+        disposable = converter.convert(image)
             .observeOn(uiScheduler)
             .subscribe({
                 viewState.hideProgressConversion()
                 viewState.showSuccess()
-            }, {
+            }, { throwable ->
                 viewState.hideProgressConversion()
-                viewState.showError()
+                viewState.showError(throwable.message)
             })
+    }
+
+    fun stopConvert() {
+        if (disposable != null)
+            disposable?.dispose()
+        disposable = null
+        viewState.showCancelMessage()
     }
 }
