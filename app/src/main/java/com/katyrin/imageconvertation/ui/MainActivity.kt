@@ -58,7 +58,7 @@ class MainActivity : MvpAppCompatActivity(), MainView {
             .subscribe({ image ->
                 successPickImage(image)
             }, { throwable ->
-                Toast.makeText(this, throwable.localizedMessage, Toast.LENGTH_SHORT).show()
+                showError(throwable.localizedMessage)
             })
     }
 

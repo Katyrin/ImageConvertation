@@ -34,12 +34,20 @@ class MainPresenter(
         disposable = converter.convert(image)
             .observeOn(uiScheduler)
             .subscribe({
-                viewState.hideProgressConversion()
-                viewState.showSuccess()
+                successSavePngImage()
             }, { throwable ->
-                viewState.hideProgressConversion()
-                viewState.showError(throwable.message)
+                errorSavePngImage(throwable.localizedMessage)
             })
+    }
+
+    private fun successSavePngImage() {
+        viewState.hideProgressConversion()
+        viewState.showSuccess()
+    }
+
+    private fun errorSavePngImage(message: String?) {
+        viewState.hideProgressConversion()
+        viewState.showError(message)
     }
 
     fun stopConvert() {
